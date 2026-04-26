@@ -2,6 +2,33 @@
 
 Todos los cambios notables en este proyecto serán documentados en este archivo.
 
+## [4.7.3] - 2026-04-26 "Shift-Ready Synchronization"
+### Modificado
+- **Banner de Acción Crítica:** Actualizada la alerta superior para mostrar la siguiente dosis (23:30 - 8ª Ronda) tras completar la de las 15:30.
+- **Sincronización Git:** Optimización del flujo de push manual para actualizaciones en tiempo real durante el trayecto al trabajo.
+
+## [4.7.2] - 2026-04-26 "Real-Time Environment & Weather"
+### Añadido
+- **Módulo de Clima en Tiempo Real:** Integración de la API de Open-Meteo en el header para monitorizar la temperatura de Madrid (25°C actual) y prevenir golpes de calor post-operatorios.
+- **Versionado Interno:** Sincronización de las etiquetas de versión (v4.7.2) en el <title> y el header del Dashboard para auditoría visual rápida.
+
+## [4.7.1] - 2026-04-26 "Dashboard Decluttering"
+### Modificado
+- **Piloto Automático:** Limpieza de tareas completadas (Ducha, Comida). Enfoque exclusivo en "Mochila Decathlon" y "Salida Metro".
+- **Registro de Medicación:** Marcado manual de la 7ª Ronda (Amoxi + Enantyum) como tomada a las 16:06.
+
+## [4.7.0] - 2026-04-26 "Neuro-Pacing (Slow Walk Protocol)"
+### Añadido
+- **Protocolo de Paso Lento:** Ajuste del cronograma de salida a las 16:17 (en lugar de 16:07) para permitir una caminata sin prisas hacia el metro, reduciendo el riesgo de aumento de tensión arterial.
+
+## [4.6.9] - 2026-04-26 "L4 -> L1 Metro Optimization"
+### Modificado
+- **Ruta Estratégica de Transporte:** Cálculo y documentación de la ruta óptima (Línea 4 a Línea 1 via Bilbao) para llegada exacta a las 16:44 (Marqués de Viana 15).
+
+## [4.6.7] - 2026-04-26 "Symptom Control: Bleeding Resolved"
+### Eliminado
+- **Módulo de Control de Sangrado:** Eliminación del bloque de emergencia por hemorragia tras confirmarse la estabilización total de los coágulos.
+
 ## [4.6.5] - 2026-04-26 "Active Duty & Crisis Resolution"
 ### Modificado
 - **Estado Laboral:** Transición de estado "Baja Prevista" a "Modo Supervivencia (Turno Activo)".
