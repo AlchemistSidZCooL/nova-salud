@@ -1,0 +1,45 @@
+{
+  "system_identity": {
+    "name": "NOVA Health: Nexus Protocol",
+    "version": "4.3.0",
+    "codename": "Digital Alchemy / Health",
+    "owner": "Daniel Hernán García Alzate",
+    "description": "Integrated health management system for neurodivergent professional synchronization."
+  },
+  "architecture": {
+    "frontend": "Single Page Application (SPA) - Vanilla HTML/CSS/JS",
+    "data_layer": {
+      "sources": ["Sanitas Clinical PDF", "Vive Madrid Work Schedule", "WorldTimeAPI"],
+      "storage": "Local Workspace / Markdown Reference"
+    },
+    "design_language": "Digital Alchemy (High-Contrast, JetBrains Mono, Cyberpunk Aesthetics)"
+  },
+  "protocols": [
+    {
+      "id": "N-LOG",
+      "name": "Neuro-Symptom Logging Protocol",
+      "tags": {
+        "EXE": "Executive Dysfunction / Task Paralysis",
+        "SEN": "Sensory Overload / Hypersensitivity",
+        "SOC": "Social Masking / Interaction Fatigue",
+        "FOC": "Hyperfocus / Task Switching"
+      },
+      "purpose": "Generate clinical-grade evidence for psychiatric evaluation."
+    },
+    {
+      "id": "PREP-SCHEDULE",
+      "name": "Critical Appointment Preparation",
+      "logic": "Step-by-step synchronization based on work-fatigue states."
+    }
+  ],
+  "current_state": {
+    "last_sync": "2026-04-24T12:00:00Z",
+    "active_protocol": "Dental Extraction Prep (T-Minus 00:45:00)",
+    "pending_evaluations": ["Psychiatry (ADHD/ASD)", "Dermatology (Papilloma)"]
+  },
+  "migration_hooks": {
+    "json_export": true,
+    "markdown_compatible": true,
+    "api_ready": false
+  }
+}

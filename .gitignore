@@ -1,0 +1,11 @@
+# Archivos pesados (no necesarios en la web)
+*.zip
+*.pdf
+*.png
+*.svg
+!favicon_health.svg
+
+# Directorios temporales
+temp_*/
+evidencias_clinicas/
+ContextoOliver/

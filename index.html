@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOVA Health · Nexus Dashboard v4.6.5</title>
+<link rel="icon" type="image/svg+xml" href="favicon_health.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  /* ── DESIGN TOKENS ─────────────────────────── */
+  :root {
+    --bg:        #0d1117;
+    --surface-1: #161b22;
+    --surface-2: #21262d;
+    --border:    rgba(255,255,255,0.08);
+
+    --teal:      #2dd4bf;   /* Salud / primario     */
+    --sky:       #38bdf8;   /* Info / instrucciones */
+    --amber:     #fbbf24;   /* Advertencia          */
+    --rose:      #fb7185;   /* Urgente / error      */
+    --emerald:   #34d399;   /* Éxito / completado   */
+    --purple:    #a855f7;   /* Neurodiversidad      */
+
+    --text-1:    #f0f6fc;
+    --text-2:    #8b949e;
+    --text-3:    #484f58;
+
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text-1);
+    min-height: 100vh;
+    padding: 24px;
+    line-height: 1.5;
+  }
+
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* ── LAYOUT ────────────────────────────────── */
+  .container { max-width: 1200px; margin: 0 auto; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .space { display: flex; flex-direction: column; gap: 16px; }
+  .space-sm { display: flex; flex-direction: column; gap: 10px; }
+
+  @media (max-width: 768px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  /* ── CARDS ─────────────────────────────────── */
+  .card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-priority-1 { border-top: 4px solid var(--rose); box-shadow: 0 4px 20px rgba(251,113,133,0.1); }
+  .card-priority-2 { border-top: 4px solid var(--teal); }
+  .card-purple { border-left: 4px solid var(--purple); background: rgba(168, 85, 247, 0.02); }
+
+  /* ── BADGE ─────────────────────────────────── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; padding: 3px 8px;
+    border-radius: 6px;
+  }
+  .badge-rose    { background: rgba(251,113,133,.15); color: var(--rose); }
+  .badge-amber   { background: rgba(251,191,36,.15);  color: var(--amber); }
+  .badge-teal    { background: rgba(45,212,191,.15);  color: var(--teal); }
+  .badge-sky     { background: rgba(56,189,248,.15);  color: var(--sky); }
+  .badge-purple  { background: rgba(168, 85, 247, .15); color: var(--purple); }
+
+  .label { font-size: 11px; font-weight: 700; letter-spacing: .1em;
+           text-transform: uppercase; color: var(--text-2); }
+
+  /* ── PROGRESS BAR ──────────────────────────── */
+  .progress-container {
+    width: 100%; height: 8px; background: var(--surface-2);
+    border-radius: 4px; overflow: hidden; margin-top: 8px;
+  }
+  .progress-bar {
+    height: 100%; background: linear-gradient(90deg, var(--teal), var(--sky));
+    width: 0%; transition: width 1s ease-in-out;
+  }
+
+  /* ── INTERACTIVE CHECKS ─────────────────────── */
+  .check-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px; border-radius: var(--radius-sm);
+    background: rgba(255,255,255,0.03); cursor: pointer;
+    transition: all 0.2s; border: 1px solid transparent;
+  }
+  .check-item:hover { background: rgba(255,255,255,0.06); border-color: var(--border); }
+  .check-item.done { opacity: 0.5; filter: grayscale(1); }
+  
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .dot-teal { background: var(--teal); box-shadow: 0 0 8px var(--teal); }
+  .dot-rose { background: var(--rose); box-shadow: 0 0 8px var(--rose); }
+
+  /* ── NOTICE BOX ────────────────────────────── */
+  .notice {
+    padding: 14px 16px; border-radius: var(--radius-sm);
+    font-size: 12px; font-weight: 500; line-height: 1.6;
+    border-left: 3px solid;
+  }
+  .notice-rose   { background: rgba(251,113,133,.08); border-color: var(--rose);   color: #fecdd3; }
+  .notice-amber  { background: rgba(251,191,36,.08);  border-color: var(--amber);  color: #fde68a; }
+  .notice-teal   { background: rgba(45,212,191,.08);  border-color: var(--teal);   color: #99f6e4; }
+
+  /* ── CONTACTS ──────────────────────────────── */
+  .contact-btn {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px 16px;
+    text-decoration: none; color: var(--text-1);
+    font-size: 13px; font-weight: 600;
+    transition: border-color .2s, background .2s;
+  }
+  .contact-btn:hover { border-color: var(--teal); background: rgba(45,212,191,.05); }
+
+  /* ── CALENDAR ── */
+  .day-cell {
+    border-radius: 10px; padding: 10px 6px;
+    font-size: 11px; font-weight: 800; text-align: center;
+    background: var(--surface-2); border: 1px solid var(--border);
+  }
+  .day-cell.today-cell { border-color: var(--teal); color: var(--teal); background: rgba(45,212,191,.1); }
+
+  /* ── STEPS ── */
+  .step-row {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 12px; border-radius: var(--radius-sm);
+    transition: background .2s;
+  }
+  .step-row:hover { background: var(--surface-2); }
+  .step-num {
+    min-width: 24px; height: 24px; border-radius: 6px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800; color: var(--text-2);
+    flex-shrink: 0;
+  }
+
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER COMPLETO -->
+  <div class="header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--border);">
+    <div>
+      <p class="label" style="color:var(--rose);">Nexus Protocol · Recuperación Post-Operatoria</p>
+      <h1 style="font-size:28px; font-weight:900;">NOVA Health Terminal <span style="color:var(--teal);">v4.6.5</span></h1>
+      <p style="font-size:12px; color:var(--text-2);">Paciente: Daniel García · <span id="time-since-surgery" style="color:var(--rose); font-weight:700;">--:--:-- desde intervención</span></p>
+    </div>
+    <div style="text-align:right;">
+      <div id="countdown" class="mono" style="font-size:20px; font-weight:900; color:var(--rose);">--:--:--</div>
+      <div style="display:flex; gap:10px; font-size:11px; color:var(--text-2); margin-top:4px;">
+        <span>MAD <b id="time-madrid" style="color:var(--text-1);">--:--</b></span>
+        <span>COL <b id="time-colombia" style="color:var(--text-1);">--:--</b></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALERTA DE PRÓXIMO EVENTO -->
+  <div style="background:rgba(56,189,248,0.1); border:1px solid var(--sky); border-radius:var(--radius-md); padding:16px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center;">
+    <div>
+      <p class="label" style="color:var(--sky); margin-bottom:4px;"><i class="fa-solid fa-bell fa-shake"></i> Próxima Acción Crítica (Tarde)</p>
+      <p style="font-size:16px; font-weight:800; color:var(--text-1);">Séptima Ronda de Medicación</p>
+      <p style="font-size:12px; color:var(--text-2);">Amoxicilina (750mg) + Enantyum (25mg)</p>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:24px; font-weight:900; color:var(--sky); font-family:'JetBrains Mono', monospace;">15:30 PM</div>
+      <span class="badge badge-sky">PENDIENTE</span>
+    </div>
+  </div>
+
+  <!-- PANEL DE SUPERVIVENCIA LABORAL (ACTUALIZADO v4.6.5) -->
+  <div style="background:rgba(52,211,153,0.05); border:2px solid var(--emerald); border-radius:var(--radius-sm); padding:16px; margin-bottom:24px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <p style="font-size:11px; font-weight:900; color:var(--emerald); letter-spacing:1px; text-transform:uppercase;"><i class="fa-solid fa-shield-halved"></i> Modo Supervivencia Laboral Activado</p>
+      <span class="badge badge-emerald">CRISIS SUPERADA</span>
+    </div>
+    <div class="grid-2" style="gap:20px;">
+      <div>
+        <p style="font-size:13px; font-weight:800; color:var(--teal); margin-bottom:4px;">REGLAS DE ENGANCHE (HOY):</p>
+        <ul style="font-size:12px; color:var(--text-2); margin-left:18px;">
+          <li><b>Cero Peso:</b> Prohibido cargar cajas o hielos.</li>
+          <li><b>Silencio Táctico:</b> Hablar lo mínimo e indispensable.</li>
+          <li><b>Descanso Blindado:</b> 19:30 a 21:00 para reposo mandibular. (Meds a las 15:30 y 23:30).</li>
+        </ul>
+      </div>
+      <div>
+        <p style="font-size:13px; font-weight:800; color:var(--sky); margin-bottom:4px;">RESOLUCIÓN SOCIAL [EXE]:</p>
+        <p style="font-size:12px; color:var(--text-2);">Límites clínicos establecidos con el equipo mediante comunicación asertiva. Se va a trabajar para cubrir a los compañeros, pero con respaldo médico explícito para no rendir al 100% físicamente.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="space">
+
+    <!-- SECCIÓN 1: ACCIÓN INMEDIATA (GASAS Y SUPERVIVENCIA) -->
+    <div class="grid-2">
+      <!-- MÓDULO DE GASA DETALLADO -->
+      <div class="card card-priority-1">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+           <p class="label" style="color:var(--rose);"><i class="fa-solid fa-droplet"></i> Control de Sangrado y Gasas</p>
+           <span class="badge badge-rose">¡Importante!</span>
+        </div>
+        <div class="space-sm">
+          <div class="check-item done" onclick="toggleCheck(this)">
+            <i class="fa-solid fa-check-circle"></i>
+            <div style="flex:1;">
+              <p style="font-size:13px; font-weight:700;">Gasa Actual (30-45 min)</p>
+              <p style="font-size:11px; color:var(--text-2);">Control de sangrado inicial superado.</p>
+            </div>
+          </div>
+          <div style="background:rgba(0,0,0,0.2); padding:12px; border-radius:var(--radius-sm); font-size:11px;">
+            <p><strong>Paso a paso con la gasa:</strong></p>
+            <ol style="margin-left:16px; margin-top:4px; color:var(--text-2); display:flex; flex-direction:column; gap:4px;">
+              <li>Si al quitarla sangra rojo vivo, pon una nueva doblada en 4.</li>
+              <li>Muerde otros 45 min. No escupas (traga la saliva/sangre).</li>
+              <li>No duermas con la gasa. Si el sangrado es mínimo, retírala.</li>
+              <li>Si no tienes gasas, muerde una bolsa de té negro húmeda.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <!-- MÓDULO DE SUPERVIVENCIA (MEDS + DIETA) -->
+      <div class="card card-priority-2">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+           <p class="label" style="color:var(--sky);"><i class="fa-solid fa-person-walking-luggage"></i> Guía en Piloto Automático</p>
+           <div style="text-align:right;">
+             <p class="label" style="font-size:9px;">Cicatrización</p>
+             <div class="progress-container" style="width:80px; margin-top:0;"><div class="progress-bar" id="healing-progress"></div></div>
+           </div>
+        </div>
+        <div class="space-sm" style="margin-bottom:10px;">
+          <div class="step-row" style="padding:10px;">
+            <div class="mono" style="min-width:52px; padding:6px 10px; border-radius:8px; background:rgba(255,255,255,0.08); color:#f0f6fc; font-size:13px; font-weight:700; text-align:center;">14:00</div>
+            <p style="font-size:12px;"><b>Ducha:</b> Agua templada, sin prisa.</p>
+          </div>
+          <div class="step-row" style="padding:10px;">
+            <div class="mono" style="min-width:52px; padding:6px 10px; border-radius:8px; background:rgba(255,255,255,0.08); color:#f0f6fc; font-size:13px; font-weight:700; text-align:center;">14:30</div>
+            <p style="font-size:12px;"><b>Vestirse &amp; Kit:</b> Uniforme, pastillas, gasas, agua en bolsa.</p>
+          </div>
+          <div class="step-row" style="padding:10px; background:rgba(45,212,191,0.08); border-left:3px solid var(--teal);">
+            <div class="mono" style="min-width:52px; padding:6px 10px; border-radius:8px; background:var(--teal); color:#0d1117; font-size:13px; font-weight:900; text-align:center; box-shadow:0 0 12px rgba(45,212,191,0.4);">15:30</div>
+            <p style="font-size:12px;"><b style="color:var(--teal);">💊 Salida &amp; Meds:</b> Tomar pastillas. Ir al Decathlon. Mochila nueva.</p>
+          </div>
+          <div class="step-row" style="padding:10px; background:rgba(251,113,133,0.08); border-left:3px solid var(--rose);">
+            <div class="mono" style="min-width:52px; padding:6px 10px; border-radius:8px; background:var(--rose); color:#0d1117; font-size:13px; font-weight:900; text-align:center; box-shadow:0 0 12px rgba(251,113,133,0.4);">16:45</div>
+            <p style="font-size:12px;"><b style="color:var(--rose);">🏁 Llegada:</b> Vive Madrid. Presencia Silenciosa activada.</p>
+          </div>
+        </div>
+
+        <div class="notice notice-amber" style="margin-top:0px; font-size:10px; padding:8px;">
+           <i class="fa-solid fa-utensils"></i> <b>DIETA TARTA:</b> Fría. Cero semillas/crujientes. Masticar lado izq. NO escupir.
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 2: CONTROL DE MEDICACIÓN DETALLADO -->
+    <div class="card" style="border-left: 4px solid var(--teal);">
+      <p class="label" style="margin-bottom:16px; color:var(--teal); font-weight:900;"><i class="fa-solid fa-pills"></i> Pauta de Medicación (Domingo 26/04)</p>
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div style="background:rgba(45,212,191,0.05); padding:16px; border-radius:var(--radius-md); border:1px solid rgba(45,212,191,0.2);">
+          <p style="font-size:14px; font-weight:900; color:var(--teal); margin-bottom:4px;">Amoxicilina 750mg</p>
+          <p style="font-size:11px; color:var(--text-2); margin-bottom:8px;">Antibiótico · 1 cápsula cada 8 horas</p>
+          <div style="font-size:10px; display:flex; gap:10px;">
+            <span class="badge badge-teal">07:30</span>
+            <span class="badge badge-teal">15:30</span>
+            <span class="badge badge-teal">23:30</span>
+          </div>
+        </div>
+        <div style="background:rgba(251,113,133,0.05); padding:16px; border-radius:var(--radius-md); border:1px solid rgba(251,113,133,0.2);">
+          <p style="font-size:14px; font-weight:900; color:var(--rose); margin-bottom:4px;">Enantyum 25mg</p>
+          <p style="font-size:11px; color:var(--text-2); margin-bottom:8px;">Dolor/Inflamación · 1 sobre cada 8 horas</p>
+          <div style="font-size:10px; display:flex; gap:10px;">
+            <span class="badge badge-rose">07:30</span>
+            <span class="badge badge-rose">15:30</span>
+            <span class="badge badge-rose">23:30</span>
+          </div>
+        </div>
+      </div>
+      <div class="grid-3">
+        <!-- BLOQUE 07:30 -->
+        <div class="check-item done" onclick="toggleCheck(this)" style="flex-direction:column; align-items:flex-start; border:1px solid var(--teal);">
+          <div style="display:flex; justify-content:space-between; width:100%; margin-bottom:4px;">
+            <b style="color:var(--teal);">07:30 AM</b>
+            <i class="fa-solid fa-check-circle" style="color:var(--teal);"></i>
+          </div>
+          <p style="font-size:10px; color:var(--text-2);">Amoxi + Enantyum + Agua/Sal</p>
+          <span class="badge badge-emerald" style="margin-top:4px; font-size:8px;">✅ TOMADO A LAS 08:46</span>
+        </div>
+        <!-- BLOQUE 15:30 -->
+        <div class="check-item" onclick="toggleCheck(this)" style="flex-direction:column; align-items:flex-start; border:1px solid var(--sky);">
+          <div style="display:flex; justify-content:space-between; width:100%; margin-bottom:4px;">
+            <b style="color:var(--sky);">15:30 PM</b>
+            <i class="fa-regular fa-circle-check"></i>
+          </div>
+          <p style="font-size:10px; color:var(--text-2);">Amoxi + Enantyum + Agua/Sal</p>
+          <span class="badge badge-sky" style="margin-top:4px; font-size:7px;">SIGUIENTE DOSIS</span>
+        </div>
+        <!-- BLOQUE 23:30 -->
+        <div class="check-item" onclick="toggleCheck(this)" style="flex-direction:column; align-items:flex-start; border:1px solid var(--rose);">
+          <div style="display:flex; justify-content:space-between; width:100%; margin-bottom:4px;">
+            <b style="color:var(--rose);">23:30 PM</b>
+            <i class="fa-regular fa-circle-check"></i>
+          </div>
+          <p style="font-size:10px; color:var(--text-2);">Pomada Ojo + Amoxi + Enantyum</p>
+          <span class="badge badge-rose" style="margin-top:4px; font-size:7px;">PENDIENTE</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 3: TUTORIALES PASO A PASO -->
+    <div class="grid-2">
+      <!-- TUTORIAL POMADA -->
+      <div class="card">
+        <p class="label" style="margin-bottom:12px;"><i class="fa-solid fa-eye"></i> Paso a Paso: Pomada Oftálmica</p>
+        <div class="space-sm">
+          <div class="step-row"><div class="step-num">01</div><p class="step-body">Manos limpias con jabón.</p></div>
+          <div class="step-row"><div class="step-num">02</div><p class="step-body">Bolsillo en el párpado inferior.</p></div>
+          <div class="step-row" style="background:rgba(251,113,133,0.05);"><div class="step-num" style="background:var(--rose); color:white;">03</div><p class="step-body"><b>Grano de arroz:</b> El tubo NO toca el ojo.</p></div>
+          <div class="step-row"><div class="step-num">04</div><p class="step-body">Cierra suave y mueve el globo.</p></div>
+        </div>
+      </div>
+      <!-- DICCIONARIO DE FASES -->
+      <div class="card">
+        <p class="label" style="margin-bottom:12px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Traductor de Fases Dentales</p>
+        <div class="space-sm">
+          <div style="border-left:2px solid var(--rose); padding-left:10px;">
+            <p style="font-size:12px; font-weight:700; color:var(--rose);">Fase 1: Desescombro</p>
+            <p style="font-size:10px; color:var(--text-2);">Sacar muelas rotas (Piezas 18, 46, 47 extraídas).</p>
+          </div>
+          <div style="border-left:2px solid var(--teal); padding-left:10px;">
+            <p style="font-size:12px; font-weight:700; color:var(--teal);">Fase 2: Cimientos</p>
+            <p style="font-size:10px; color:var(--text-2);">Endodoncias (matar nervio) para salvar lo que queda.</p>
+          </div>
+          <div style="border-left:2px solid var(--sky); padding-left:10px;">
+            <p style="font-size:12px; font-weight:700; color:var(--sky);">Fase 3: El Tejado</p>
+            <p style="font-size:10px; color:var(--text-2);">Coronas y fundas para blindar los dientes.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 4: EXPEDIENTE CLÍNICO DIGITALIZADO -->
+    <div class="card" style="border-left: 4px solid var(--sky);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <p class="label" style="color:var(--sky);"><i class="fa-solid fa-file-medical"></i> Expediente Clínico Digitalizado</p>
+        <span class="badge badge-sky">LECTURA TDAH / TEA</span>
+      </div>
+      
+      <details style="background:rgba(255,255,255,0.02); padding:16px; border-radius:var(--radius-md); margin-bottom:12px; border:1px solid var(--border); cursor:pointer;">
+        <summary style="font-size:13px; font-weight:700; color:var(--text-1); outline:none; user-select:none;"><i class="fa-solid fa-prescription" style="color:var(--teal); margin-right:8px;"></i> Receta Oficial Sanitas (Digitalizada)</summary>
+        <div style="margin-top:12px; font-size:11px; color:var(--text-2); padding-top:12px; border-top:1px solid var(--border);">
+          <p><strong style="color:var(--text-1);">Fecha:</strong> 24/04/2026</p>
+          <div style="background:rgba(45,212,191,0.05); padding:10px; border-radius:6px; margin-top:8px;">
+            <p><strong style="color:var(--teal);">Amoxicilina 750 mg:</strong> 1 cápsula cada 8 horas (7 días).</p>
+          </div>
+          <div style="background:rgba(251,113,133,0.05); padding:10px; border-radius:6px; margin-top:8px;">
+            <p><strong style="color:var(--rose);">Enantyum 25 mg:</strong> 1 sobre cada 8 horas.</p>
+          </div>
+        </div>
+      </details>
+
+      <details style="background:rgba(255,255,255,0.02); padding:16px; border-radius:var(--radius-md); margin-bottom:12px; border:1px solid var(--border); cursor:pointer;" open>
+        <summary style="font-size:13px; font-weight:700; color:var(--text-1); outline:none; user-select:none;"><i class="fa-solid fa-book-medical" style="color:var(--sky); margin-right:8px;"></i> Pautas Postoperatorias (Críticas)</summary>
+        <div style="margin-top:12px; font-size:12px; color:var(--text-2); padding-top:12px; border-top:1px solid var(--border); line-height:1.6;">
+          <p style="color:var(--rose); font-weight:800; margin-bottom:8px; text-transform:uppercase;">Signos de Alarma (Urgencias 915 50 04 76):</p>
+          <ul style="margin-left:20px; display:flex; flex-direction:column; gap:8px;">
+            <li>Fiebre superior a 38ºC.</li>
+            <li>Sangrado abundante incontrolable.</li>
+            <li>Inflamación que aumenta tras el día 3.</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- SECCIÓN 5: NEURODIVERSIDAD (TDAH/TEA) -->
+    <div class="card card-purple">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <p class="label" style="color:var(--purple);">Gestión de Neurodiversidad · Bitácora N-Log</p>
+        <span class="badge badge-purple">ID: 43513617</span>
+      </div>
+      <div class="grid-2">
+        <div class="notice" style="background:rgba(168, 85, 247, 0.05); border-color:var(--purple); color:#e9d5ff; font-size:11px;">
+          <strong>Análisis [EXE]:</strong> La presión de Oliver genera una "parálisis por análisis" y ansiedad. Recuerda que el cerebro neurodivergente procesa la amenaza de rechacho/despido de forma más intensa (RSD).
+        </div>
+        <div style="background:rgba(0,0,0,0.2); padding:12px; border-radius:var(--radius-sm); font-size:11px;">
+          <p><strong>Estrategia:</strong> Mantén el foco en la recuperación física para evitar un colapso sensorial mañana si intentas trabajar con dolor.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 6: AGENDA Y CONTACTOS -->
+    <div class="grid-2">
+      <!-- CALENDARIO -->
+      <div class="card">
+        <p class="label" style="margin-bottom:12px;">Cuadrante Vive Madrid · Abril</p>
+        <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:8px;">
+           <div class="day-cell">21</div><div class="day-cell">22</div><div class="day-cell">23</div>
+           <div class="day-cell">24<br><small>EXT</small></div><div class="day-cell">25<br><small>REPOSO</small></div>
+           <div class="day-cell today-cell">26<br><small>BAJA</small></div><div class="day-cell">27</div>
+        </div>
+        <div class="notice notice-teal" style="font-size:10px; padding:6px; font-weight:bold;">
+           INCORPORACIÓN CON RESTRICCIONES. Sábado 25: Reposo. Domingo 26: Turno Activo.
+        </div>
+      </div>
+      <!-- CONTACTOS -->
+      <div class="card space-sm">
+        <p class="label">Emergencias</p>
+        <a href="tel:915500476" class="contact-btn"><span style="font-size:11px;">Sanitas Dental</span> <b class="mono">915500476</b></a>
+        <a href="tel:914775048" class="contact-btn"><span style="font-size:11px;">C.S. Soldevilla</span> <b class="mono">914775048</b></a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div style="text-align:center; padding:32px 0; border-top:1px solid var(--border); opacity:0.5;">
+    <p class="mono" style="font-size:10px; letter-spacing:2px;">NEXUS · HEALTH INTELLIGENCE · v4.6.3</p>
+  </div>
+</div>
+
+<script>
+  function toggleCheck(el) {
+    el.classList.toggle('done');
+    const icon = el.querySelector('i');
+    if(el.classList.contains('done')) { icon.className = 'fa-solid fa-check-circle'; }
+    else { icon.className = 'fa-regular fa-circle-check'; }
+  }
+
+  const surgeryDate = new Date("2026-04-24T12:45:00").getTime();
+  const stitchesDate = surgeryDate + (7 * 24 * 60 * 60 * 1000);
+  
+  function updateHealing() {
+    const now = new Date().getTime();
+    const total = stitchesDate - surgeryDate;
+    const current = now - surgeryDate;
+    let pct = Math.round((current / total) * 100);
+    if(pct < 0) pct = 0; if(pct > 100) pct = 100;
+    const bar = document.getElementById('healing-progress');
+    if(bar) bar.style.width = pct + '%';
+  }
+
+  function updateClocks() {
+    const now = new Date();
+    const options = { hour: '2-digit', minute: '2-digit', hour12: false };
+    document.getElementById("time-madrid").textContent = now.toLocaleTimeString('es-ES', { ...options, timeZone: 'Europe/Madrid' });
+    document.getElementById("time-colombia").textContent = now.toLocaleTimeString('es-ES', { ...options, timeZone: 'America/Bogota' });
+    
+    const diff_intervention = now.getTime() - surgeryDate;
+    const hours = Math.floor(diff_intervention / 3600000);
+    const minutes = Math.floor((diff_intervention % 3600000) / 60000);
+    const seconds = Math.floor((diff_intervention % 60000) / 1000);
+    document.getElementById("time-since-surgery").textContent = `${hours}h ${minutes}m ${seconds}s desde intervención`;
+
+    const diff = surgeryDate - now.getTime();
+    const countdownEl = document.getElementById("countdown");
+    if (diff > 0) {
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      countdownEl.textContent = `${h}h ${m}m ${s}s`;
+    } else {
+      countdownEl.textContent = "RECUPERACIÓN";
+      countdownEl.style.color = "var(--teal)";
+    }
+    updateHealing();
+  }
+
+  setInterval(updateClocks, 1000);
+  updateClocks();
+</script>
+</body>
+</html>
